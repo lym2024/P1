@@ -6,6 +6,8 @@ Modificado por: Juan Pablo Morales.
 Agregadas producciones para manejar globos
 Modificado por Silvia Takahashi
 
+jaime Esteban Moreno Jaramillo - 202220189 Sec 3
+Thomas Bonnett - 202225550 Sec 2
 
  **/
 
@@ -13,9 +15,10 @@ Modificado por Silvia Takahashi
 options 
 {
   
-	LOOKAHEAD=1; 
+	LOOKAHEAD=3; 
 	IGNORE_CASE=true;
 	STATIC = false;
+	FORCE_LA_CHECK=true;
 	
 }
    
@@ -24,6 +27,7 @@ PARSER_BEGIN(Robot)
 
 package uniandes.lym.robot.control;
 
+import java.io.ByteArrayInputStream;
 import uniandes.lym.robot.kernel.*;
 import uniandes.lym.robot.view.Console;
  
@@ -32,53 +36,383 @@ import java.io.*;
 import java.util.Vector;
 import java.util.LinkedList;
 
+import java.util.List;	
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Set;
+import java.awt.Point;
+
 @SuppressWarnings("serial")
 public class Robot 
 {
 
+	public static String variable_ass;
+	public static String name_proc;
+	public static String name_proc_call;
 
-	private RobotWorldDec world;
+	public static String imagesString = "";
+
 	
+	public static HashMap<String, Integer > NameValue = new HashMap< >();
+	public static HashMap<String, List< String > > ProcPar = new HashMap<>();
+	public static HashMap<String, HashMap< String, Integer > > ProcParDef = new HashMap<>();
+
+	
+	private RobotWorldDec world;
 	
 	void setWorld(RobotWorld w) {
 		world = (RobotWorldDec) w;	
 	}
 
 	String salida=new String();
+	
+	void executeCommand(HashMap<String, List<String>> dict) {
+
+	 	Set<String> keys = dict.keySet();
+	 	List<String> keyList = new ArrayList<>(keys);
+	 	String cmd =keyList.get(0);
+	 	
+	    if (cmd.equals("jump")) { 
+
+
+	            int x = Integer.parseInt(dict.get("jump").get(0));
+	            int y = Integer.parseInt(dict.get("jump").get(1));
+	            world.setPostion(x, y);
+	            salida = "Command: Jump to (" + x + ", " + y + ")";
+	    }else if (cmd.equals("movedir")) { 
+		
+				int x_1 = Integer.parseInt(dict.get("movedir").get(0));
+				String type =dict.get("movedir").get(1);
+
+	
+			  if (type.equals("front") || type.equals("back") ) { /ESTO ES D/
+				if (type.equals("front")) { x_1=-x_1;}
+				world.moveVertically(x_1,false);
+			    }
+			  if (type.equals("right") || type.equals("left") ) {
+				if (type.equals("left")) { x_1=-x_1;}
+				world.moveHorizontally(x_1,false);
+			  }
+		
+					boolean apuntadorOeste=world.facingWest();
+					boolean apuntadorEste=world.facingEast();
+					boolean apuntadorNorte=world.facingNorth();
+					boolean apuntadorSur=world.facingSouth();
+					boolean iterator=true;
+		
+			if (type.equals("north")) {
+				while(iterator==true) {
+					if (apuntadorNorte==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorNorte=world.facingNorth();
+					   }
+				  }
+				world.moveForward(x_1,false);	  
+		
+				  
+			   }
+		
+			if (type.equals("south")) {
+				while(iterator==true) {
+					if (apuntadorSur==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorSur=world.facingSouth();}
+				  }
+				world.moveForward(x_1,false);	  
+				  
+			   }
+		
+			if (type.equals("west")) {
+				while(iterator==true) {
+					if (apuntadorOeste==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorOeste=world.facingWest();}
+				  }
+				world.moveForward(x_1,false);	  
+				  
+			   }	   
+		
+			if (type.equals("east")) {
+				while(iterator==true) {
+					if (apuntadorEste==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorEste=world.facingEast();}
+				  }
+				world.moveForward(x_1,false);	    
+			   }
+			if (type.equals("a")) {
+				world.moveForward(x_1,false);	    
+			  }
+
+		}else if (cmd.equals("skips")) {
+
+			int x = Integer.parseInt(dict.get("skips").get(0));
+		  	String type = dict.get("skips").get(1);
+		  	
+			  if (type.equals("front") || type.equals("back") ) { /ESTO ES D/
+				if (type.equals("front")) { x=-x;}
+				world.moveVertically(x,true);
+			    }
+			  if (type.equals("right") || type.equals("left") ) {
+				if (type.equals("left")) { x=-x;}
+				world.moveHorizontally(x,true);
+			  }
+		
+					boolean apuntadorOeste=world.facingWest();
+					boolean apuntadorEste=world.facingEast();
+					boolean apuntadorNorte=world.facingNorth();
+					boolean apuntadorSur=world.facingSouth();
+					boolean iterator=true;
+		
+			if (type.equals("north")) {
+				while(iterator==true) {
+					if (apuntadorNorte==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorNorte=world.facingNorth();
+					   }
+				  }
+				world.moveForward(x,true);	  
+		
+				  
+			   }
+		
+			if (type.equals("south")) {
+				while(iterator==true) {
+					if (apuntadorSur==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorSur=world.facingSouth();}
+				  }
+				world.moveForward(x,true);	  
+				  
+			   }
+		
+			if (type.equals("west")) {
+				while(iterator==true) {
+					if (apuntadorOeste==true) {
+						iterator=true;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorOeste=world.facingWest();}
+				  }
+				world.moveForward(x,true);	  
+				  
+			   }	   
+		
+			if (type.equals("east")) {
+				while(iterator==true) {
+					if (apuntadorEste==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorEste=world.facingEast();}
+				  }
+				world.moveForward(x,true);	  
+				  
+			   }
+			if (type.equals("a")) {
+				world.moveForward(x,true);	  
+			  }
+		} else if (cmd.equals("turn")) {
+		  	String direction = dict.get("turn").get(0);
+				if (direction.equals("left")) {
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+				  }
+				  
+				 if (direction.equals("right")) { 
+					world.turnRight();
+					}
+				if (direction.equals("around")) {
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();	
+				  }
+
+		}else if (cmd.equals("turnto")) {
+	
+					boolean apuntadorOeste=world.facingWest();
+					boolean apuntadorEste=world.facingEast();
+					boolean apuntadorNorte=world.facingNorth();
+					boolean apuntadorSur=world.facingSouth();
+					boolean iterator=true;
+		
+			String orientation = dict.get("turnto").get(0);
+			if (orientation.equals("north")) {
+				while(iterator==true) {
+					if (apuntadorNorte==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorNorte=world.facingNorth();
+					   }
+				  }		  
+			   }
+		
+			if (orientation.equals("south")) {
+				while(iterator==true) {
+					if (apuntadorSur==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorSur=world.facingSouth();}
+				  }		  
+			   }
+		
+			if (orientation.equals("west")) {
+				while(iterator==true) {
+					if (apuntadorOeste==true) {
+						iterator=true;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorOeste=world.facingWest();}
+				  }		  
+			   }	   
+		
+			if (orientation.equals("east")) {
+				while(iterator==true) {
+					if (apuntadorEste==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorEste=world.facingEast();}
+				  }		  
+			   }
+		}else if (cmd.equals("drop") || cmd.equals("get")||cmd.equals("grab")||cmd.equals("letgo")) {
+		  		String direction = dict.get(cmd).get(0); 
+				if (direction.equals("left")) {
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+				  }
+				  
+				 if (direction.equals("right")) { 
+					world.turnRight();
+					}
+				if (direction.equals("around")) {
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();	
+				  }
+		} 
+		
+	    }
+
+
+
 }
 PARSER_END(Robot)
 
 SKIP:
 {
-	" "
-	|	"\r"
-	|	"\t"
-	| "\n"
+  " "
+| "\r"
+| "\t"
+| "\n"
+| "("
+| ")"
 }
 
-TOKEN: /* Nombres de Comandos */
+TOKEN :/* funciones*/
 {
-< MOVE:"move" >
-| < MOVE_DIR: "move - dir" >
-| < PUT: "PUT" >
+  < DEFVAR: "defVar" >
+| < ASSIGN: "=" >
+| < DEFUN: "defun" >
+| < MOVE: "move" >
+| < SKIPS: "skip" >
+| < TURN: "turn" >
+| < FACE: "face" >
+| < PUT: "put" >
+| < PICK: "pick" >
+| < MOVEDIR: "move-dir" >
+| < RUNDIRS: "run-dirs" >
+| < MOVEFACE: "move-face" >
 }
 
 TOKEN:
 {
-  < NORTH : "north" >
-| < SOUTH:"south" >
-| < BALLONS:"ballons" >
+
+ < BALLONS:"ballons" >
 | < CHIPS: "chips" >
 }
 
-TOKEN :
+TOKEN: /* Structures */
 {
-		<NUM: (<DIGIT>)+ >
-		|  	<#DIGIT: ["0"-"9"] >
-		| < LETTER: ["a"-"z"] >
-		| < NAME:(< LETTER >)+ >
-		
-        
+  < IF : "if" >
+| < ELSE : "else" >
+
+| < WHILE : "while" >
+
+| < REPEAT : "repeat" >
+| < TIMES : "times" >
+
+
+}
+
+TOKEN:/* Conditions */
+{
+  < FACING : "facing" >
+| < CAN : "can" >
+| < NOT : "not" >
+}
+
+TOKEN:/* Operators */
+{
+
+
+ < OCO : "{" >
+| < OCC : "}" >
+
+| < ODC : ";" >
+| < CMM : "," >
+| < TD : ":" >
+
+}
+
+TOKEN:/Parameters Names/
+{
+
+
+ < O : "north" | "south" | "east" | "west">
+| < D : "front" |"back" >
+| < DE : "around" >
+| < RT : "right" >
+| < LT : "left" >
+}
+
+TOKEN :/* Type Variable Names */
+{
+	< #digits :	["0"-"9"] >
+|	< #letter : ["a"-"z" , "A"-"Z"] >
+
+|	< WORD : (< letter > | "") (< letter > | < digits > | "")* >
+|	< NUM : (< digits >)+ >	    
 }
 
 
@@ -93,53 +427,553 @@ TOKEN :
 
 	
 	{
-	comandos()		   <EOF> {return false;} 
+		
+		(
+		  (sentences()) 
+
+		{
+		    try {
+	    			 Thread.sleep(900);
+	    	    } catch (InterruptedException e) {
+	    			        System.err.format("IOException: %s%n", e);
+	    		    }
+	    	System.out.println(ProcPar);
+	    	System.out.println(ProcParDef);
+	    	System.out.println(NameValue);
+	    	System.out.println(imagesString);
+			sistema.printOutput(salida);
+			return true;
+		})+
+
+    	| <EOF> {return false;} 
 	}
 
-	
-	// en los primeros corchetes se maneja java
-	// y en los segundos javacc
-	void comandos():
+
+	// Main Function	
+
+	void sentences(): { }/*Si quiere probar alguna grammar solo pongalo aqui en sentences el bloque de codigo no esta terminado */
 	{
-	  int var;
+	  declareVariable()
+	| grammarProcedures()
+	| grammarBlockCode(true)
+
 	}
+	// Grammar Block Code
+
+	List<HashMap<String, List<String>>> grammarBlockCode(boolean execute): {List<HashMap<String, List<String>>> list= new ArrayList<>(); HashMap<String, List<String>> x;}
+	{
+		< OCO > (( x = simpleCommand(execute) {list.add(x); } | grammarIfElse() | grammarWhile() | grammarRepeatTimes() | grammarProceduresCall()) (< ODC > (x = simpleCommand(execute) {list.add(x); } | grammarIfElse() | grammarWhile() | grammarRepeatTimes() | grammarProceduresCall()))*) < OCC >
+		{return list; }
+	}	
+
+	//Grammar variable definition
+	void declareVariable(): { String variable; int number = 0; String value_var;}
+	{
+	   < DEFVAR > < WORD >{variable = token.image.toLowerCase();} ( number = num() { NameValue.put(variable, number); } | value_var = variableVerification() { NameValue.put(variable, NameValue.get(value_var)); }) 
+	   {
+	     salida = "Variable Definition";
+	   }
+	}
+
+	//Grammar variable assignment
+
+	HashMap<String,List<String>> grammarVariableAssignment(): {}
+	{
+		< WORD > { variable_ass = token.image.toLowerCase(); } < ASSIGN> (variableWordAssignation() | < NUM > { NameValue.put(variable_ass, Integer.parseInt(token.image));})
+		{
+		  HashMap<String, List<String>>  dict = new HashMap<>();
+		  List<String> list = new ArrayList<>();
+		  dict.put("assigment",list);
+		  return dict;
+		}
+	}
+	
+	//Grammar simple command
+
+	HashMap<String,List<String>> simpleCommand(boolean execute): { HashMap<String,List<String>> x;}
 	{
 	  (
-	    "("< MOVE > ":" var = varOnum()")"
-	    		{
-		world.moveHorizontally(var,false);
-		world.moveVertically(var,false);
-		  }	  )
+	    
+		x = grammarskips(execute)
+	|	x =grammarmovedir(execute)
+	|	x =grammarskips(execute)
+	|	x =grammarTurn(execute)
+	| 	x =grammarTurnTo(execute)
+	| 	x =grammarSingleValueParameter(execute)
+	| 	x =grammarVariableAssignment())
+	
+		{return x;}
 	}
 
-	int varOnum():
+	
+
+	HashMap<String, List<String>> grammarmovedir(boolean execute): { int x = 0; String word_1;String type="a";}
 	{
-	int total = 0;
-	 }
-	 {
-	   (< NAME > {return total;} | < NUM > {
-			try 
-			{
-				total = Integer.parseInt(token.image);
-			} 
-			catch (NumberFormatException ee) 
-			{
-				throw new Error("Number out of bounds: "+token.image+" !!");
+		{
+		  	HashMap<String, List<String>>  dict = new HashMap<>();
+			List<String> list = new ArrayList<>();
+			
+			list.add(Integer.toString(x));
+			list.add(type);
+			dict.put("movedir",list);
+			
+		  if (execute == true) { 
+				/ESTE YA ESTA BIEN/
+	
+			  if (type.equals("front") || type.equals("back") ) { /ESTO ES D/
+				if (type.equals("front")) { x=-x;}
+				world.moveVertically(x,false);
+			    }
+			  if (type.equals("right") || type.equals("left") ) {
+				if (type.equals("left")) { x=-x;}
+				world.moveHorizontally(x,false);
+			  }
+		
+					boolean apuntadorOeste=world.facingWest();
+					boolean apuntadorEste=world.facingEast();
+					boolean apuntadorNorte=world.facingNorth();
+					boolean apuntadorSur=world.facingSouth();
+					boolean iterator=true;
+		
+			if (type.equals("north")) {
+				while(iterator==true) {
+					if (apuntadorNorte==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorNorte=world.facingNorth();
+					   }
+				  }
+				world.moveForward(x,false);	  
+		
+				  
+			   }
+		
+			if (type.equals("south")) {
+				while(iterator==true) {
+					if (apuntadorSur==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorSur=world.facingSouth();}
+				  }
+				world.moveForward(x,false);	  
+				  
+			   }
+		
+			if (type.equals("west")) {
+				while(iterator==true) {
+					if (apuntadorOeste==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorOeste=world.facingWest();}
+				  }
+				world.moveForward(x,false);	  
+				  
+			   }	   
+		
+			if (type.equals("east")) {
+				while(iterator==true) {
+					if (apuntadorEste==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorEste=world.facingEast();}
+				  }
+				world.moveForward(x,false);	    
+			   }
+			if (type.equals("a")) {
+				world.moveForward(x,false);	    
+			  }
 			}
-			return total;
-		}	   )
+			return dict;
+		}
+	}
 
-	 }
+	HashMap<String, List<String>> grammarskips(boolean execute): { int x = 0; String word_1; String type="a";}
+	{
+		< SKIPS >  ( word_1 = variableVerification() { if(word_1!="-1") x = NameValue.get(word_1);} | x = num() ) [ < CMM > ( < O > | < D >|< RT>|< LT >) { type=token.image;}] 
+		{
+		  	HashMap<String, List<String>>  dict = new HashMap<>();
+			List<String> list = new ArrayList<>();
+			
+			list.add(Integer.toString(x));
+			list.add(type);
+			dict.put("skips",list);
+			
+		  if (execute == true) { 
+	
+			  if (type.equals("front") || type.equals("back") ) { /ESTO ES D/
+				if (type.equals("front")) { x=-x;}
+				world.moveVertically(x,true);
+			    }
+			  if (type.equals("right") || type.equals("left") ) {
+				if (type.equals("left")) { x=-x;}
+				world.moveHorizontally(x,true);
+			  }
+		
+					boolean apuntadorOeste=world.facingWest();
+					boolean apuntadorEste=world.facingEast();
+					boolean apuntadorNorte=world.facingNorth();
+					boolean apuntadorSur=world.facingSouth();
+					boolean iterator=true;
+		
+			if (type.equals("north")) {
+				while(iterator==true) {
+					if (apuntadorNorte==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorNorte=world.facingNorth();
+					   }
+				  }
+				world.moveForward(x,true);	  
+		
+				  
+			   }
+		
+			if (type.equals("south")) {
+				while(iterator==true) {
+					if (apuntadorSur==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorSur=world.facingSouth();}
+				  }
+				world.moveForward(x,true);	  
+				  
+			   }
+		
+			if (type.equals("west")) {
+				while(iterator==true) {
+					if (apuntadorOeste==true) {
+						iterator=true;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorOeste=world.facingWest();}
+				  }
+				world.moveForward(x,true);	  
+				  
+			   }	   
+		
+			if (type.equals("east")) {
+				while(iterator==true) {
+					if (apuntadorEste==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorEste=world.facingEast();}
+				  }
+				world.moveForward(x,true);	  
+				  
+			   }
+			if (type.equals("a")) {
+				world.moveForward(x,true);	  
+			  }
+			}
+		  return dict;
+		}
+	}
+
+	HashMap<String, List<String>> grammarTurn(boolean execute): { String direction;}
+	{
+		< FACE >  (< DE >|<RT>|<LT>) { direction = token.image.toLowerCase(); } 
+		{
+
+		  	HashMap<String, List<String>>  dict = new HashMap<>();
+			List<String> list = new ArrayList<>();
+			list.add(direction);
+			dict.put("turn",list);
+			
+		 	if (execute == true) { 
+				if (direction.equals("left")) {
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+				  }
+				  
+				 if (direction.equals("right")) { 
+					world.turnRight();
+					}
+				if (direction.equals("around")) {
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();
+					world.turnRight();	
+				  }
+			}
+			return dict;
+		}
+	}
+
+	HashMap<String, List<String>> grammarTurnTo(boolean execute): { String orientation;}
+	{
+	 	< FACE >  < O > { orientation = token.image.toLowerCase();}
+		{
+		  	HashMap<String, List<String>>  dict = new HashMap<>();
+			List<String> list = new ArrayList<>();
+		
+			list.add(orientation);
+			dict.put("turnto",list);
+			
+			if (execute == true) {   
+					boolean apuntadorOeste=world.facingWest();
+					boolean apuntadorEste=world.facingEast();
+					boolean apuntadorNorte=world.facingNorth();
+					boolean apuntadorSur=world.facingSouth();
+					boolean iterator=true;
+		
+		
+			if (orientation.equals("north")) {
+				while(iterator==true) {
+					if (apuntadorNorte==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorNorte=world.facingNorth();
+					   }
+				  }		  
+			   }
+		
+			if (orientation.equals("south")) {
+				while(iterator==true) {
+					if (apuntadorSur==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorSur=world.facingSouth();}
+				  }		  
+			   }
+		
+			if (orientation.equals("west")) {
+				while(iterator==true) {
+					if (apuntadorOeste==true) {
+						iterator=true;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorOeste=world.facingWest();}
+				  }		  
+			   }	   
+		
+			if (orientation.equals("east")) {
+				while(iterator==true) {
+					if (apuntadorEste==true) {
+						iterator=false;
+					  }
+					 else {
+						world.turnRight();
+						apuntadorEste=world.facingEast();}
+				  }		  
+			   }
+			 }
+	   		return dict;	
+		}
+	}
+
+	HashMap<String, List<String>> grammarSingleValueParameter(boolean execute): { int x; String word_1; String command;}
+	{
+		( < PUT >) { command = token.image.toLowerCase();} (word_1 = variableVerification() { x = NameValue.get(word_1);} | x = num()) 
+		{
+		  	HashMap<String, List<String>>  dict = new HashMap<>();
+			List<String> list = new ArrayList<>();
+			
+			list.add(Integer.toString(x));
+			dict.put(command,list);
+
+		  if (execute == true) { 
+		  	if (command.equals("drop")) { /SOLTAR GALLETAS/
+				world.putChips(x);}
+
+			if (command.equals("get")) {  /COGER GALLETAS/
+				world.pickChips (x);}
+		
+			if (command.equals("grab")) {/AGARRAR BALLONES/
+				world.grabBalloons(x);}
+				
+			if (command.equals("letgo")) { /PONER BALLONES/
+				world.putBalloons(x);}
+			}
+			return dict;
+	}
+	}
 
 	
+
+	//Grammar control structure
+
+	void grammarIfElse(): {boolean x; List<HashMap<String, List<String>>> t;List<HashMap<String, List<String>>> u  = new ArrayList<>();;}
+	{
+		
+	  		< IF > x = condition() t = grammarBlockCode(false)[ < ELSE >  u = grammarBlockCode(false)]
+		{
+			if(x = true) {
+				for (HashMap<String, List<String>> h : t) executeCommand(h);
+				
+			}else if (u.size()!=0) { for (HashMap<String, List<String>> i : u) executeCommand(i);}
+		}
+	}
+
+	void grammarWhile(): {boolean x; List<HashMap<String, List<String>>> t;}
+	{
+		< WHILE > x = condition() t = grammarBlockCode(false)
+		{
+		  while(x) {for (HashMap<String, List<String>> h : t) executeCommand(h); }
+		}
+	}
+
+	void grammarRepeatTimes(): { int x=1; String word_1;List<HashMap<String, List<String>>> t; }
+	{
+		< REPEAT > (word_1=variableVerification() { if(word_1!="-1") x = NameValue.get(word_1);} | x = num()) < TIMES > t = grammarBlockCode(false)
+		{
+			for (int i = 0; i < x; i++) {for (HashMap<String, List<String>> h : t) executeCommand(h); }
+		}
+		
+	}
+	
+	//Grammar condition
+
+	boolean condition(): { boolean result = false; }
+	{
+		( result = grammarFacing() | result = grammarCan()| result =grammarNot())
+		{
+		  return result;
+		}
+	}
+
+	boolean grammarFacing(): {String orientation; String actualOrientation=""; }
+	{
+		< FACING >  < O > { orientation = token.image;} 
+		{
+			
+			if (world.getFacing() == 0) actualOrientation= "north";
+			if (world.getFacing() == 1) actualOrientation= "south";
+			if (world.getFacing() == 2) actualOrientation= "east";
+			if (world.getFacing() == 3) actualOrientation= "west";
+
+		  	if (orientation.equals(actualOrientation)) return true;
+		  	else return false;
+
+		}
+
+	}
+
+	boolean grammarCan(): { boolean resultado=true;}
+	{
+		
+		
+		  < CAN > 
+			try {
+			    (simpleCommand(false))
+			    { 
+			    resultado = true; }
+			} catch (Error e) {
+			  { 
+			    resultado = false; }
+			}
+
+
+		{return resultado;}
+	}
+
+	boolean grammarNot(): {boolean x;}
+	{
+		< NOT > < TD >x=condition()
+		{return !x;}
+	}
+
+	// Helper functions for conditions
 	
 
-	/**
-	 * Unsigned decimal number
-	 * @return the corresponding value of the string
-	 * @error  corresponding value is too large
-	 */
+	// Grammar Procedures
 
+	void grammarProcedures(): { }
+	{
+		< DEFUN > < WORD > { name_proc = token.image.toLowerCase();}  [parameterList()] grammarBlockCode(false)
+		{
+		  	List< String > list = new ArrayList<>();
+		 	if(!(ProcPar.containsKey(name_proc))) ProcPar.put(name_proc,list);
+		}
+	}
+
+	//Grammar Procedures Call
+
+	void grammarProceduresCall(): { }
+	{
+		< WORD > { name_proc_call = token.image.toLowerCase();} [ addParameters()]
+		{
+			HashMap<String, Integer > midMap = new HashMap<>();
+			if (!ProcParDef.containsKey(name_proc_call)) ProcParDef.put(name_proc_call, midMap);
+		}
+	}
+	//Auxiliary functions Procedures
+
+
+	void addParameters(): { List< Integer > temp_list = new ArrayList<>(); int number; String variable; }
+	{
+
+		( ( number = num() { temp_list.add(number); } | variable = variableVerification(){ temp_list.add(NameValue.get(variable)); } )< CMM >  )* ( number = num() { temp_list.add(number); } | variable = variableVerification(){ temp_list.add(NameValue.get(variable)); } )
+		{
+		  
+		
+			HashMap<String, Integer > midMap = new HashMap<>();
+		  	
+			if (temp_list.size() != 0 && ProcPar.containsKey(name_proc_call) && ProcPar.get(name_proc_call).size() == temp_list.size())
+			{
+		    	for ( int i = 0 ; i < temp_list.size(); i++)
+		    	{
+		    		
+		    		midMap.put(ProcPar.get(name_proc_call).get(i) , temp_list.get(i) );  
+		    		  
+		   		}
+		   		ProcParDef.put(name_proc_call, midMap);
+			}
+		
+		}
+		 	   	
+	}
+
+
+	String variableVerification() throws Error: { String total = "";}
+	{
+		< WORD >
+		{
+	  		if (!(NameValue.containsKey(token.image) || ProcPar.get(name_proc).contains(token.image))) throw new ParseException("Undefined variable");
+	  		total = token.image.toLowerCase();
+	  		if (ProcPar.get(name_proc).contains(token.image)) return "-1";
+	  		return total;
+		}
+	}
+		
+	void variableWordAssignation(): {}
+	{
+		< WORD >
+		{
+			if (NameValue.containsKey(token.image) && NameValue.containsKey(variable_ass)) {
+				  			//if(NameValue.containsKey(token.image) && NameValue.containsKey(variable_ass))
+				
+				NameValue.put(variable_ass,NameValue.get(token.image.toLowerCase()));
+			}else if ((ProcPar.get(name_proc).contains(token.image) || ProcPar.get(name_proc).contains(variable_ass) ) )
+			{System.out.print(""); 
+			}else{
+					throw new ParseException("Undefined variable");
+				}
+
+			 }
+		}
+
+		
 	int num() throws Error:
 	{	
 		int total=1;
@@ -159,4 +993,11 @@ TOKEN :
 		}
 	}
 
+	void parameterList(): {String par; List<String> list = new ArrayList<>(); }
+	{
+		( < WORD > { par = token.image.toLowerCase();} < CMM > { list.add(par.toLowerCase());})* < WORD > { list.add(token.image);}
+		{
+		  ProcPar.put(name_proc,list);
+		}  
+	}
 	
